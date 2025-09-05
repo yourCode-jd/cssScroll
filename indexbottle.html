@@ -30,28 +30,29 @@
         <label>Upload Image: <input type="file" id="imageUpload" accept="image/*"></label>
     </div>
 
-    <!-- Use UMD builds (no import/export needed) -->
+    <!-- Three.js UMD build (no ES modules) -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        let scene, camera, renderer, bottle, labelMaterial, textureCanvas, ctx, texture;
+        let scene, camera, renderer, bottle, labelMaterial, textureCanvas, ctx, texture, controls;
 
-        // Setup
+        // Setup scene + camera
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1, 5);
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // Lights
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 5, 5);
         scene.add(light);
+        scene.add(new THREE.AmbientLight(0x888888)); // soft ambient
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
 
         // Texture canvas for label
         textureCanvas = document.createElement('canvas');
@@ -69,10 +70,25 @@
         const loader = new THREE.GLTFLoader();
         loader.load("bottle.glb", (gltf) => {
             bottle = gltf.scene;
-            bottle.scale.set(1.5, 1.5, 1.5);
             scene.add(bottle);
 
-            // Pick first material as target
+            // Center the bottle
+            const box = new THREE.Box3().setFromObject(bottle);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            bottle.position.sub(center); // move center to (0,0,0)
+
+            // Auto-fit camera
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraZ = maxDim / (2 * Math.tan(fov / 2));
+            cameraZ *= 1.5; // zoom-out factor
+            camera.position.set(0, 0, cameraZ);
+            camera.lookAt(0, 0, 0);
+            controls.target.set(0, 0, 0);
+            controls.update();
+
+            // Pick a material to apply changes
             bottle.traverse((child) => {
                 if (child.isMesh && !labelMaterial) {
                     labelMaterial = child.material;
