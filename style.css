@@ -27,7 +27,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Gabarito", sans-serif;
+    /* font-family: "Gabarito", sans-serif; */
     letter-spacing: normal;
 }
 
@@ -67,4 +67,76 @@ h6 {
 #hero-canvas {
     will-change: transform;
     pointer-events: none;
+}
+
+/* Fade & slide in for the headset */
+.hero-image {
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeSlideIn 1.5s ease-out forwards;
+}
+
+/* Scale & fade in for the title */
+.hero-title {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: zoomFadeIn 1.5s ease-out forwards;
+    animation-delay: 0.5s;
+    /* starts after the image */
+}
+
+@keyframes fadeSlideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes zoomFadeIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.scrollParagraph span {
+    background: linear-gradient(90deg, #714426, #714426);
+    background-size: 0% 100%;
+    background-clip: text;
+    color: hsla(0, 0%, 0%, 0.2);
+    background-repeat: no-repeat;
+
+    animation: scrollGradient linear forwards;
+    animation-timeline: view();
+
+}
+
+.scrollParagraph p span {
+    animation-range-start: cover 10vh;
+    animation-range-end: cover 60vh;
+}
+
+@keyframes scrollGradient {
+    to {
+        background-size: 100% 100%;
+    }
+}
+
+nav {
+    animation: stickyNav linear both;
+    animation-timeline: view();
+    animation-range: 0% 50%;
+    /* starts right when nav enters viewport */
+}
+
+@keyframes stickyNav {
+    0% {
+        background-color: transparent;
+        /* default state */
+    }
+
+    100% {
+        background-color: red;
+        /* after scroll */
+    }
 }

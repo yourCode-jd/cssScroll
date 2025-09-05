@@ -23,22 +23,15 @@
 
 <body class="font-gabarito">
 
-    <!-- Cursor -->
-
-    <div id="customCursor"
-        class="fixed top-0 left-0 w-8 h-8 rounded-full bg-[#714426] pointer-events-none z-50 transition-all duration-200 ease-out mix-blend-multiply text-white text-[10px] flex items-center justify-center">
-        <span id="cursorText"></span>
-    </div>
-
-
     <!-- Header -->
 
-    <section class="relative">
+    <section class="sticky top-0 z-50 w-full">
         <div class="relative">
 
             <!-- Navigation -->
             <nav
-                class="absolute px-5 md:px-8 lg:px-20 flex items-center justify-between py-5 left-0 w-full bg-[#ffffff] bg-opacity-5 backdrop-blur-5xl z-20">
+                class="px-5 md:px-8 lg:px-20 flex items-center justify-between py-5 left-0 w-full backdrop-blur-5xl z-20">
+
                 <!-- Logo -->
                 <a href="/index.html" class="logo text-4xl font-bold uppercase cursor-pointer text-[#714426]">Audio</a>
                 <!-- Hamburger -->
@@ -66,10 +59,10 @@
     </section>
 
     <!-- Hero Section -->
-    <section class="px-6 md:px-12 lg:px-20 flex flex-col-reverse md:flex-row items-center justify-between ">
+    <section class="px-6 md:px-12 lg:px-20 flex flex-col-reverse md:flex-row items-center justify-between">
 
         <!-- Headset Image -->
-        <div id="hero-canvas" class="fixed inset-0 m-auto w-[700px] h-[600px] z-10">
+        <div id="hero-canvas" class="absolute inset-0 m-auto w-[700px] h-[600px] z-10">
             <img src="/assets/heroHead.svg" alt="Hero Headset" class="w-full h-full object-contain hero-image">
         </div>
 
@@ -81,116 +74,19 @@
         </div>
     </section>
 
-    <!-- Showcase Section -->
-    <section id="showcase" class="relative">
-        <div class="">
-            <!-- <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Crafted to Impress</h2> -->
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-[100vh] overflow-hidden">
-
-                <!-- Image 4 -->
-                <div class="image-box rounded-lg">
-                    <img src="assets/showcase3.jpg" alt="Headset Angle 3" class="w-full gsap-image" />
-                </div>
-
-                <!-- Image 2/5 -->
-
-                <div class="canvas-target m-auto w-[700px] h-[600px] z-10">
-
-                </div>
-
-                <!-- Image 1 -->
-                <div class="image-box rounded-lg">
-                    <img src="assets/showcase1.jpg" alt="Headset Angle 1" class="w-full gsap-image" />
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience Section -->
-    <section id="experience" class="py-20">
-        <div class="px-6 md:px-12 lg:px-20">
-            <div class="flex flex-col md:flex-row items-center gap-10">
-
-                <!-- Left: Video -->
-                <div class="w-full md:w-1/2">
-                    <div
-                        class="aspect-w-16 aspect-h-9 h-[300px] w-[400px] rounded-lg shadow-lg overflow-hidden mx-auto">
-                        <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Product Video" allowfullscreen
-                            class="w-full h-full border-none"></iframe>
-                    </div>
-                </div>
-
-                <!-- Right: Content -->
-                <div class="w-full md:w-1/2 text-center md:text-left">
-                    <div class="canvas-target inset-0 m-auto w-[700px] h-[600px] z-10"></div>
-                    <!-- <h2 class="text-3xl font-bold text-[#714426] mb-4">Experience the Difference</h2> -->
-                    <div class="max-w-lg">
-                        <p class="text-[#714426] text-lg mb-4 font-normal">
-                            Step into a world of immersive audio unlike anything you’ve heard before. With cutting-edge
-                            acoustics and luxurious comfort, our headset turns everyday listening into an extraordinary
-                            experience.
-                        </p>
-                        <p class="text-[#714426] text-lg font-normal">
-                            Whether you're in a meeting, in the studio, or simply escaping into your favorite music,
-                            this
-                            headset adapts to your world with seamless precision.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Feature Section -->
-    <section id="about" class="px-6 md:px-12 lg:px-20 about-section h-screen flex flex-col items-start justify-center">
-        <div class="max-w-md">
-            <h2 class="text-8xl font-bold mb-4">About Our Headset</h2>
-            <p class="intro text-xl font-normal text-gray-600">
-                Where innovation meets craftsmanship — our headset is designed for those who expect nothing less
-                than
-                excellence in every detail.
-            </p>
-            <button
-                class="button mt-8 bg-[#333333] text-white py-2 px-8 rounded-full hover:bg-[#714426] focus:outline-none focus:ring-2 focus:ring-[#714426] focus:ring-opacity-50">Buy
-                Now</button>
-        </div>
-
-        <div class="features mt-14 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="feature-box border-2 border-gray-600 rounded-xl p-6 ">
-                <h3 class="text-2xl mb-2 text-gray-600 uppercase font-medium">Signature Sound</h3>
-                <p class="text-base text-gray-600 font-normal">
-                    Immerse yourself in rich, studio-grade audio with precision-engineered drivers delivering
-                    exceptional clarity, depth, and balance.
-                </p>
-            </div>
-            <div class="feature-box border-2 border-gray-600 rounded-xl p-6">
-                <h3 class="text-2xl mb-2 text-gray-600 uppercase font-medium">Luxury Materials</h3>
-                <p class="text-base text-gray-600 font-normal">
-                    Crafted with premium leather, brushed metal, and memory foam ear cushions for an unmatched
-                    combination of style and comfort.
-                </p>
-            </div>
-            <div class="feature-box border-2 border-gray-600 rounded-xl p-6">
-                <h3 class="text-2xl mb-2 text-gray-600 uppercase font-medium">Smart Technology</h3>
-                <p class="text-base text-gray-600 font-normal">
-                    Enjoy intelligent noise cancellation, seamless Bluetooth connectivity, and intuitive touch
-                    controls — all tailored for effortless use.
-                </p>
-            </div>
-        </div>
+    <!-- About Section -->
+    <section
+        class="scrollParagraph w-full h-[300vh] flex items-center justify-center px-6 md:px-12 lg:px-20 bg-[#f9f6f3]">
+        <p class="max-w-6xl text-center text-xl md:text-4xl font-medium !leading-[50px] space-y-4">
+            <span>Our headsets are designed to deliver an uncompromising audio
+                experience, blending powerful bass, crystal-clear highs, and balanced
+                mids for true-to-life sound. Every detail, from the lightweight build to
+                the ergonomic fit, is crafted with comfort in mind, so you can enjoy
+                hours of listening without fatigue.</span>
+        </p>
     </section>
 
 
-
-    <!-- ✅ Load in correct order -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
-    <!-- ✅ Must come after Lenis -->
-    <script src="custom.js"></script>
 </body>
 
 </body>
