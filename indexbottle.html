@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>3D Bottle Customizer</title>
+    <title>Bottle Customizer</title>
     <style>
         body {
             margin: 0;
@@ -30,31 +30,31 @@
         <label>Upload Image: <input type="file" id="imageUpload" accept="image/*"></label>
     </div>
 
-    <!-- Three.js UMD build (no ES modules) -->
+    <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/geometries/DecalGeometry.js"></script>
 
     <script>
-        let scene, camera, renderer, bottle, labelMaterial, textureCanvas, ctx, texture, controls;
+        let scene, camera, renderer, controls, bottle, bottleMaterial, decalMesh;
+        let textureCanvas, ctx, textTexture;
 
-        // Setup scene + camera
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         // Lights
+        scene.add(new THREE.AmbientLight(0x888888));
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 5, 5);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0x888888)); // soft ambient
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-        // Texture canvas for label
+        // Texture canvas for text decal
         textureCanvas = document.createElement('canvas');
         textureCanvas.width = 512;
         textureCanvas.height = 256;
@@ -63,62 +63,93 @@
         ctx.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
         ctx.fillStyle = "black";
         ctx.font = "40px Arial";
-        ctx.fillText("My Bottle", 50, 150);
-        texture = new THREE.CanvasTexture(textureCanvas);
+        ctx.textAlign = "center";
+        ctx.fillText("My Label", textureCanvas.width / 2, 130);
+        textTexture = new THREE.CanvasTexture(textureCanvas);
 
-        // Load GLB Bottle
+        // Load bottle
         const loader = new THREE.GLTFLoader();
         loader.load("bottle.glb", (gltf) => {
             bottle = gltf.scene;
             scene.add(bottle);
 
-            // Center the bottle
+            // Center + scale camera
             const box = new THREE.Box3().setFromObject(bottle);
             const center = box.getCenter(new THREE.Vector3());
             const size = box.getSize(new THREE.Vector3());
-            bottle.position.sub(center); // move center to (0,0,0)
-
-            // Auto-fit camera
+            bottle.position.sub(center);
             const maxDim = Math.max(size.x, size.y, size.z);
             const fov = camera.fov * (Math.PI / 180);
             let cameraZ = maxDim / (2 * Math.tan(fov / 2));
-            cameraZ *= 1.5; // zoom-out factor
+            cameraZ *= 1.5;
             camera.position.set(0, 0, cameraZ);
             camera.lookAt(0, 0, 0);
             controls.target.set(0, 0, 0);
             controls.update();
 
-            // Pick a material to apply changes
+            // Get material
             bottle.traverse((child) => {
-                if (child.isMesh && !labelMaterial) {
-                    labelMaterial = child.material;
+                if (child.isMesh && !bottleMaterial) {
+                    bottleMaterial = child.material;
+                    bottleMaterial.map = null; // start without image
+                    bottleMaterial.color = new THREE.Color("#00aaff"); // default
                 }
             });
 
-            if (labelMaterial) {
-                labelMaterial.map = texture;
-                labelMaterial.needsUpdate = true;
-            }
+            // Add text decal above cap
+            addTextDecal();
         });
 
-        // Event: Color Picker
+        // Function to add decal (text label)
+        function addTextDecal() {
+            if (!bottle) return;
+
+            // Bounding box of bottle
+            const box = new THREE.Box3().setFromObject(bottle);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            // Position decal at middle front of bottle body
+            const labelPos = new THREE.Vector3(center.x, center.y, box.max.z + 0.01);
+
+            // Orientation: facing forward
+            const orientation = new THREE.Euler(0, 0, 0);
+
+            // Decal size (like a rectangular sticker)
+            const decalSize = new THREE.Vector3(size.x * 0.6, size.y * 0.2, 0.1);
+
+            const decalGeom = new THREE.DecalGeometry(bottle, labelPos, orientation, decalSize);
+            const decalMat = new THREE.MeshPhongMaterial({
+                map: textTexture,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false,
+                side: THREE.FrontSide
+            });
+
+            decalMesh = new THREE.Mesh(decalGeom, decalMat);
+            scene.add(decalMesh);
+        }
+
+        // Color Picker
         document.getElementById('colorPicker').addEventListener('input', (e) => {
-            if (labelMaterial) {
-                labelMaterial.color.set(e.target.value);
+            if (bottleMaterial) {
+                bottleMaterial.color.set(e.target.value);
             }
         });
 
-        // Event: Text Input
+        // Text Input
         document.getElementById('textInput').addEventListener('input', (e) => {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
             ctx.fillStyle = "black";
             ctx.font = "40px Arial";
-            ctx.fillText(e.target.value, 50, 150);
-            texture.needsUpdate = true;
+            ctx.textAlign = "center";
+            ctx.fillText(e.target.value, textureCanvas.width / 2, 130);
+            textTexture.needsUpdate = true;
         });
 
-        // Event: Image Upload
+        // Image Upload
         document.getElementById('imageUpload').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -126,8 +157,12 @@
             reader.onload = function (event) {
                 const img = new Image();
                 img.onload = function () {
-                    ctx.drawImage(img, 0, 0, textureCanvas.width, textureCanvas.height);
+                    const texture = new THREE.Texture(img);
                     texture.needsUpdate = true;
+                    if (bottleMaterial) {
+                        bottleMaterial.map = texture;
+                        bottleMaterial.needsUpdate = true;
+                    }
                 }
                 img.src = event.target.result;
             }
