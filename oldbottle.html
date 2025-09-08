@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>3D Bottle Customizer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: sans-serif;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <label>Pick Color: <input type="color" id="colorPicker" value="#00aaff"></label><br><br>
+        <label>Add Text: <input type="text" id="textInput" placeholder="Your text"></label><br><br>
+        <label>Upload Image: <input type="file" id="imageUpload" accept="image/*"></label>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let scene, camera, renderer, bottle, labelMaterial, textureCanvas, ctx, texture, controls;
+        let lastImage = null;
+
+        // Scene + Camera
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lights
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x888888));
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        // Texture canvas
+        textureCanvas = document.createElement('canvas');
+        textureCanvas.width = 1024;   // bigger for detail
+        textureCanvas.height = 1024;
+        ctx = textureCanvas.getContext('2d');
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
+        ctx.fillStyle = "black";
+        ctx.font = "60px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("My Bottle", textureCanvas.width / 2, 80); // top-center
+        texture = new THREE.CanvasTexture(textureCanvas);
+
+        // Load bottle
+        const loader = new THREE.GLTFLoader();
+        loader.load("bottle.glb", (gltf) => {
+            bottle = gltf.scene;
+            scene.add(bottle);
+
+            // Center bottle
+            const box = new THREE.Box3().setFromObject(bottle);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            bottle.position.sub(center);
+
+            // Camera fit
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraZ = maxDim / (2 * Math.tan(fov / 2));
+            cameraZ *= 1.5;
+            camera.position.set(0, 0, cameraZ);
+            camera.lookAt(0, 0, 0);
+            controls.target.set(0, 0, 0);
+            controls.update();
+
+            // Material override
+            bottle.traverse((child) => {
+                if (child.isMesh && !labelMaterial) {
+                    labelMaterial = child.material;
+                }
+            });
+
+            if (labelMaterial) {
+                labelMaterial.map = texture;
+                // Force wrapping over the mesh
+                labelMaterial.map.wrapS = THREE.RepeatWrapping;
+                labelMaterial.map.wrapT = THREE.RepeatWrapping;
+                labelMaterial.map.repeat.set(1, 1);
+                labelMaterial.needsUpdate = true;
+            }
+        });
+
+        // Color Picker
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            if (labelMaterial) {
+                labelMaterial.color.set(e.target.value);
+            }
+        });
+
+        // Text Input
+        document.getElementById('textInput').addEventListener('input', (e) => {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
+
+            if (lastImage) {
+                ctx.drawImage(lastImage, 0, 0, textureCanvas.width, textureCanvas.height);
+            }
+
+            ctx.fillStyle = "black";
+            ctx.font = "60px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(e.target.value, textureCanvas.width / 2, 80);
+
+            texture.needsUpdate = true;
+        });
+
+        // Image Upload
+        document.getElementById('imageUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    lastImage = img;
+
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, textureCanvas.width, textureCanvas.height);
+
+                    ctx.drawImage(img, 0, 0, textureCanvas.width, textureCanvas.height);
+
+                    const text = document.getElementById("textInput").value;
+                    if (text) {
+                        ctx.fillStyle = "black";
+                        ctx.font = "60px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(text, textureCanvas.width / 2, 80);
+                    }
+
+                    texture.needsUpdate = true;
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Animate
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
